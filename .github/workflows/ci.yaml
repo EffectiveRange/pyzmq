@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        architecture: [ arm64 ]
+        architecture: [ armhf, arm64, amd64 ]
         distribution: [ trixie ]
     permissions:
       contents: write
@@ -40,21 +40,35 @@ jobs:
           configFile: .devcontainer/${{ matrix.architecture }}-${{ matrix.distribution }}-container/devcontainer.json
           push: never
           runCmd: |
-            set -e
+            if [ ${{ matrix.architecture }} == "amd64" ]; then
+              sudo apt update && sudo apt install -y libsodium-dev libzmq-drafts
+              
+              PACKAGE=$(sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 pack_python . -s fpm-deb)
             
-            sudo apt update && sudo apt install -y libsodium-dev libzmq-drafts
+              sudo apt install -y $PACKAGE
+              
+              # check if drafts are enabled outside of pyzmq
+              cd .. && bash pyzmq/check_drafts.sh
+            else
+              WORKSPACE="$(pwd)"
+              BUILDROOT="/var/chroot/buildroot"
+              
+              sudo rsync -av --exclude ".git" --exclude ".*cache" --mkpath "${WORKSPACE}/" "${BUILDROOT}${WORKSPACE}/"
+              
+              sudo schroot -p -c buildroot -- apt update
+              sudo schroot -p -c buildroot -- apt install -y libsodium-dev libzmq-drafts packaging-tools
+              
+              PACKAGE=$(sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 schroot -p -c buildroot -- pack_python . -s fpm-deb)
+              
+              sudo schroot -p -c buildroot -- apt install -y $PACKAGE
             
-            sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 pack_python . -s fpm-deb
-
-            for package in $(find dist -name *.deb)
-            do
-              sudo apt install -y ./$package
+              # check if drafts are enabled outside of pyzmq
+              sudo schroot -p -c buildroot -d /workspaces -- bash pyzmq/check_drafts.sh
+              
+              sudo rsync -av --include "*" --mkpath "${BUILDROOT}${WORKSPACE}/dist/" "${WORKSPACE}/dist/"
+            fi
             
-              sudo mv -vf $package $(dirname $package)/${{ matrix.distribution }}_$(basename $package)
-            done
-            
-            cd ..
-            bash pyzmq/check_drafts.sh
+            sudo mv -vf $PACKAGE $(dirname $PACKAGE)/${{ matrix.distribution }}_$(basename $PACKAGE)
 
       - name: Release
         uses: softprops/action-gh-release@v2
