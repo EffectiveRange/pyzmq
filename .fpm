@@ -1,0 +1,5 @@
+--log debug
+--python-package-name-prefix python3
+--name zmq-drafts
+--depends libsodium-dev
+--depends libzmq-drafts
