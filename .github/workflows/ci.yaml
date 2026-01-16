@@ -45,30 +45,31 @@ jobs:
               
               PACKAGE=$(sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 pack_python . -s fpm-deb)
             
-              sudo apt install -y $PACKAGE
+              sudo apt install -y ${PACKAGE}
               
-              # check if drafts are enabled outside of pyzmq
+              # check if drafts are enabled outside of pyzmq project
               cd .. && bash pyzmq/check_drafts.sh
             else
-              WORKSPACE="$(pwd)"
+              WORKSPACE=$(pwd)
               BUILDROOT="/var/chroot/buildroot"
               
-              sudo rsync -av --exclude ".git" --exclude ".*cache" --mkpath "${WORKSPACE}/" "${BUILDROOT}${WORKSPACE}/"
+              sudo rsync -av --exclude ".git" --exclude ".*cache" --mkpath ${WORKSPACE}/ ${BUILDROOT}${WORKSPACE}/
               
               sudo schroot -p -c buildroot -- apt update
               sudo schroot -p -c buildroot -- apt install -y libsodium-dev libzmq-drafts packaging-tools
               
               PACKAGE=$(sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 schroot -p -c buildroot -- pack_python . -s fpm-deb)
               
-              sudo schroot -p -c buildroot -- apt install -y $PACKAGE
+              sudo schroot -p -c buildroot -- apt install -y ${PACKAGE}
             
-              # check if drafts are enabled outside of pyzmq
+              # check if drafts are enabled outside of pyzmq project
               sudo schroot -p -c buildroot -d /workspaces -- bash pyzmq/check_drafts.sh
               
-              sudo rsync -av --include "*" --mkpath "${BUILDROOT}${WORKSPACE}/dist/" "${WORKSPACE}/dist/"
+              sudo mkdir -p $(dirname ${PACKAGE})
+              sudo cp ${BUILDROOT}${PACKAGE} ${PACKAGE}
             fi
             
-            sudo mv -vf $PACKAGE $(dirname $PACKAGE)/${{ matrix.distribution }}_$(basename $PACKAGE)
+            sudo mv -vf ${PACKAGE} $(dirname ${PACKAGE})/${{ matrix.distribution }}_$(basename ${PACKAGE})
 
       - name: Release
         uses: softprops/action-gh-release@v2
