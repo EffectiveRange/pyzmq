@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         architecture: [ armhf, arm64, amd64 ]
-        distribution: [ trixie ]
+        distribution: [ bookworm, trixie ]
     permissions:
       contents: write
       discussions: write
