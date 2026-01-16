@@ -18,7 +18,7 @@ authors = [
   { name = "Brian E. Granger" },
   { name = "Min Ragan-Kelley" },
 ]
-license = { file = "LICENSE.md" }
+license = { text = "BSD-3-Clause" }
 requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
