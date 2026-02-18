@@ -56,7 +56,7 @@ jobs:
               sudo rsync -av --exclude ".git" --exclude ".*cache" --mkpath ${WORKSPACE}/ ${BUILDROOT}${WORKSPACE}/
               
               sudo schroot -p -c buildroot -- apt update
-              sudo schroot -p -c buildroot -- apt install -y libsodium-dev libzmq-drafts packaging-tools
+              sudo schroot -p -c buildroot -- apt install -y libsodium-dev libzmq5=4.3.5+drafts1 packaging-tools
               
               PACKAGE=$(sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 schroot -p -c buildroot -- pack_python . -s fpm-deb)
               

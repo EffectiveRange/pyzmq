@@ -1,7 +1,7 @@
 --log debug
 --name python3-zmq-drafts
 --depends libsodium-dev
---depends libzmq5
+--depends libzmq5=4.3.5+drafts1
 --conflicts python3-zmq
 --provides python3-zmq
 --replaces python3-zmq
