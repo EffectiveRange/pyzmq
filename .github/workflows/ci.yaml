@@ -41,7 +41,7 @@ jobs:
           push: never
           runCmd: |
             if [ ${{ matrix.architecture }} == "amd64" ]; then
-              sudo apt update && sudo apt install -y libsodium-dev libzmq-drafts
+              sudo apt update && sudo apt install -y libsodium-dev libzmq5=4.3.5+drafts1
               
               PACKAGE=$(sudo PIP_NO_BINARY=pyzmq ZMQ_DRAFT_API=1 pack_python . -s fpm-deb)
             
